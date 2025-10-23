@@ -1,0 +1,41 @@
+# Dependencies
+node_modules/
+client/node_modules/
+server/node_modules/
+
+# Development files
+.env
+client/.env
+server/.env
+
+# Build artifacts
+client/build/
+
+# Testing
+cypress/
+client/cypress/
+server/cypress/
+
+# Database (will be created on deployment)
+*.sqlite
+*.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+
+# Coverage directory used by tools like istanbul
+coverage/
+
+# IDE files
+.vscode/
+.idea/
+
+# OS generated files
+.DS_Store
+Thumbs.db

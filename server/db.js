@@ -28,6 +28,13 @@ function init() {
       FOREIGN KEY(userId) REFERENCES users(id),
       UNIQUE(date, time)
     )`);
+    db.run(`CREATE TABLE IF NOT EXISTS contacts (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      email TEXT NOT NULL,
+      message TEXT NOT NULL,
+      createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+    )`);
     // Testuser anlegen, falls nicht vorhanden
     db.get('SELECT * FROM users WHERE username = ?', ['test'], (err, row) => {
       if (!row) {

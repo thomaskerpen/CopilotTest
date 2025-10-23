@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import '../styles/App.css';
 import { useTodos } from '../hooks/useTodos';
 import { dateUtils } from '../utils/helpers';
+import ContactModal from './ContactModal';
 
 export default function TodoList() {
   const {
@@ -18,6 +19,25 @@ export default function TodoList() {
     deleteTodo,
     isOverdue
   } = useTodos();
+
+  // Modal state
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedContactId, setSelectedContactId] = useState(null);
+
+  // Function to extract contact ID from TODO text
+  const extractContactId = (todoText) => {
+    const match = todoText.match(/\[ID:(\d+)\]/);
+    return match ? parseInt(match[1]) : null;
+  };
+
+  // Handle clicking on contact TODO
+  const handleContactTodoClick = (todo) => {
+    const contactId = extractContactId(todo.text);
+    if (contactId) {
+      setSelectedContactId(contactId);
+      setModalOpen(true);
+    }
+  };
 
   return (
     <>
@@ -57,8 +77,11 @@ export default function TodoList() {
         <ul>
           {todos.map((todo) => {
             const todoIsOverdue = !todo.completed && isOverdue(todo.dueDate);
+            const isContactTodo = todo.text.includes('📧');
+            const contactId = isContactTodo ? extractContactId(todo.text) : null;
+            
             return (
-              <li key={todo.id}>
+              <li key={todo.id} className={isContactTodo ? 'contact-todo' : ''}>
                 <label className={`toggle-switch todo-toggle${todoIsOverdue ? ' overdue-toggle' : ''}`}>
                   <input
                     type="checkbox"
@@ -67,7 +90,11 @@ export default function TodoList() {
                   />
                   <span className="toggle-slider"></span>
                 </label>
-                <div className="todo-content">
+                <div 
+                  className={`todo-content ${isContactTodo ? 'clickable-contact' : ''}`}
+                  onClick={() => isContactTodo && contactId && handleContactTodoClick(todo)}
+                  title={isContactTodo ? 'Klicken Sie hier, um Details der Kontaktanfrage zu sehen' : ''}
+                >
                   <span style={{ textDecoration: todo.completed ? 'line-through' : 'none' }}>
                     {todo.text}
                   </span>
@@ -81,6 +108,16 @@ export default function TodoList() {
           })}
         </ul>
       )}
+
+      {/* Contact Modal */}
+      <ContactModal
+        contactId={selectedContactId}
+        isOpen={modalOpen}
+        onClose={() => {
+          setModalOpen(false);
+          setSelectedContactId(null);
+        }}
+      />
     </>
   );
 }

@@ -5,6 +5,7 @@ import Login from './components/Login';
 import Register from './components/Register';
 import Booking from './components/Booking';
 import TodoList from './components/TodoList';
+import Contact from './components/Contact';
 import { useAuth } from './hooks/useAuth';
 import { useNavigation } from './hooks/useNavigation';
 
@@ -43,7 +44,11 @@ function App() {
   return (
     <div className="App">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1>{currentView === 'todos' ? 'Todo List' : 'Terminbuchung'}</h1>
+        <h1>
+          {currentView === 'todos' && 'Todo List'}
+          {currentView === 'booking' && 'Terminbuchung'}
+          {currentView === 'contact' && 'Kontakt'}
+        </h1>
         <div className="hamburger-menu">
           <div 
             className={`hamburger-icon ${menuOpen ? 'active' : ''}`}
@@ -68,6 +73,12 @@ function App() {
                 Terminbuchung
               </button>
               <button 
+                className="dropdown-item"
+                onClick={() => switchToView('contact')}
+              >
+                Kontakt
+              </button>
+              <button 
                 className="dropdown-item logout"
                 onClick={() => {
                   switchToView('todos');
@@ -83,6 +94,7 @@ function App() {
       
       {currentView === 'todos' && <TodoList />}
       {currentView === 'booking' && <Booking />}
+      {currentView === 'contact' && <Contact />}
     </div>
   );
 }

@@ -1,7 +1,15 @@
-// Dynamic API URL based on environment
-const API_BASE_URL = process.env.NODE_ENV === 'production' 
-  ? '/api'  // In production, API will be served from same domain
-  : 'http://localhost:5000/api';  // Local development
+// Dynamic API URL based on environment and network access
+const getApiBaseUrl = () => {
+  if (process.env.NODE_ENV === 'production') {
+    return '/api';  // In production, API will be served from same domain
+  }
+  
+  // For development: Use current hostname (works for both localhost and IP access)
+  const hostname = window.location.hostname;
+  return `http://${hostname}:5000/api`;
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem('token');
@@ -93,6 +101,33 @@ export const appointmentService = {
   deleteAppointment: async (id) => {
     const response = await fetch(`${API_BASE_URL}/appointments/${id}`, {
       method: 'DELETE',
+      headers: getAuthHeaders()
+    });
+    return response;
+  }
+};
+
+export const contactService = {
+  sendContactForm: async (name, email, message) => {
+    const response = await fetch(`${API_BASE_URL}/contacts`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ name, email, message })
+    });
+    return response;
+  },
+
+  getContactRequests: async () => {
+    const response = await fetch(`${API_BASE_URL}/contacts`, {
+      headers: getAuthHeaders()
+    });
+    return response;
+  },
+
+  getContactById: async (id) => {
+    const response = await fetch(`${API_BASE_URL}/contacts/${id}`, {
       headers: getAuthHeaders()
     });
     return response;
