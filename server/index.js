@@ -1,0 +1,35 @@
+
+const express = require('express');
+const cors = require('cors');
+const { init } = require('./db');
+const userRoutes = require('./userRoutes');
+const todoRoutes = require('./todoRoutes');
+const jwt = require('jsonwebtoken');
+
+const app = express();
+const port = 5000;
+const JWT_SECRET = 'supersecretkey';
+
+app.use(cors());
+app.use(express.json());
+
+init();
+
+// Auth-Middleware
+function authenticateToken(req, res, next) {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  if (!token) return res.status(401).json({ error: 'Token fehlt' });
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) return res.status(403).json({ error: 'Token ungültig' });
+    req.user = user;
+    next();
+  });
+}
+
+app.use('/api', userRoutes);
+app.use('/api/todos', authenticateToken, todoRoutes);
+
+app.listen(port, '0.0.0.0', () => {
+  console.log(`Server running at http://0.0.0.0:${port}`);
+});
