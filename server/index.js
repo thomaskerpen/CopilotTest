@@ -4,6 +4,7 @@ const cors = require('cors');
 const { init } = require('./db');
 const userRoutes = require('./userRoutes');
 const todoRoutes = require('./todoRoutes');
+const appointmentRoutes = require('./appointmentRoutes');
 const jwt = require('jsonwebtoken');
 
 const app = express();
@@ -29,6 +30,7 @@ function authenticateToken(req, res, next) {
 
 app.use('/api', userRoutes);
 app.use('/api/todos', authenticateToken, todoRoutes);
+app.use('/api/appointments', authenticateToken, appointmentRoutes);
 
 app.listen(port, '0.0.0.0', () => {
   console.log(`Server running at http://0.0.0.0:${port}`);
