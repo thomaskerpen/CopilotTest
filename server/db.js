@@ -1,7 +1,11 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 
-const db = new sqlite3.Database(path.join(__dirname, 'todo.sqlite'));
+// Use in-memory database for Vercel (serverless environment)
+// In production, you should use a proper database service like PlanetScale, Supabase, or MongoDB
+const db = process.env.NODE_ENV === 'production' 
+  ? new sqlite3.Database(':memory:')  // In-memory database for Vercel
+  : new sqlite3.Database(path.join(__dirname, 'todo.sqlite'));  // File database for local development
 
 // User- und Todo-Tabellen anlegen
 function init() {
