@@ -2,14 +2,15 @@
 node_modules/
 client/node_modules/
 server/node_modules/
+api/node_modules/
 
 # Development files
 .env
 client/.env
 server/.env
 
-# Build artifacts
-client/build/
+# Don't ignore build artifacts - we need them!
+# client/build/
 
 # Testing
 cypress/
@@ -39,3 +40,7 @@ coverage/
 # OS generated files
 .DS_Store
 Thumbs.db
+
+# Server files (not needed for static deployment)
+server/
+api/
