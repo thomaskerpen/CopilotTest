@@ -1,4 +1,6 @@
 //comment
+// comment 2
+
 
 export const dateUtils = {
   getTodayString: () => new Date().toISOString().slice(0, 10),
