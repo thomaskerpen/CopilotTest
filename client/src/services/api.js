@@ -1,7 +1,7 @@
 // Dynamic API URL based on environment and network access
 const getApiBaseUrl = () => {
   if (process.env.NODE_ENV === 'production') {
-    return 'https://server-efvqulkc9-thomas-projects-c6435665.vercel.app/api';  // Your newly deployed server
+    return 'https://server-4ri8gyf9v-thomas-projects-c6435665.vercel.app/api';  // Working server with in-memory DB
   }
   
   // For development: Use current hostname (works for both localhost and IP access)
