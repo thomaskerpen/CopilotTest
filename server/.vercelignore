@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+
+# Development files
+.env
+
+# Testing
+cypress/
+
+# Database (SQLite files)
+*.sqlite
+*.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+
+# Coverage directory
+coverage/
+
+# IDE files
+.vscode/
+.idea/
+
+# OS generated files
+.DS_Store
+Thumbs.db

@@ -13,7 +13,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'supersecretkey';
 
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? ['https://*.vercel.app', 'https://your-domain.com', /vercel\.app$/] 
+    ? true  // Allow all origins in production for easier setup
     : true  // Allow all origins in development (for local network access)
 }));
 app.use(express.json());
