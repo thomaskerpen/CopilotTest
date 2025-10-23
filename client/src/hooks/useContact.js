@@ -64,7 +64,7 @@ export const useContact = () => {
       );
 
       if (response.ok) {
-        const result = await response.json();
+        await response.json(); // Parse response but don't store
         setSuccessMessage('Vielen Dank! Ihre Anfrage wurde erfolgreich gesendet.');
         // Reset form
         setFormData({

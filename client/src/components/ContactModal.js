@@ -12,6 +12,7 @@ export default function ContactModal({ contactId, isOpen, onClose }) {
     if (isOpen && contactId) {
       fetchContactDetails();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, contactId]);
 
   const fetchContactDetails = async () => {
