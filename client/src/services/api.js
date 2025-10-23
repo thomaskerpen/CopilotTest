@@ -1,4 +1,7 @@
-const API_BASE_URL = 'http://192.168.2.141:5000/api';
+// Dynamic API URL based on environment
+const API_BASE_URL = process.env.NODE_ENV === 'production' 
+  ? '/api'  // In production, API will be served from same domain
+  : 'http://localhost:5000/api';  // Local development
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem('token');

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { authUtils } from '../utils/helpers';
 
 export const useAuth = () => {

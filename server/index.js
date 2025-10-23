@@ -8,12 +8,16 @@ const appointmentRoutes = require('./appointmentRoutes');
 const jwt = require('jsonwebtoken');
 
 const app = express();
-const port = 5000;
-const JWT_SECRET = 'supersecretkey';
+const JWT_SECRET = process.env.JWT_SECRET || 'supersecretkey';
 
-app.use(cors());
+app.use(cors({
+  origin: process.env.NODE_ENV === 'production' 
+    ? ['https://*.vercel.app', 'https://your-domain.com'] 
+    : ['http://localhost:3000', 'http://localhost:3001']
+}));
 app.use(express.json());
 
+// Initialize database
 init();
 
 // Auth-Middleware
@@ -32,6 +36,12 @@ app.use('/api', userRoutes);
 app.use('/api/todos', authenticateToken, todoRoutes);
 app.use('/api/appointments', authenticateToken, appointmentRoutes);
 
-app.listen(port, '0.0.0.0', () => {
-  console.log(`Server running at http://0.0.0.0:${port}`);
-});
+// For Vercel, export the app instead of listening
+if (process.env.NODE_ENV === 'production') {
+  module.exports = app;
+} else {
+  const port = process.env.PORT || 5000;
+  app.listen(port, '0.0.0.0', () => {
+    console.log(`Server running at http://0.0.0.0:${port}`);
+  });
+}

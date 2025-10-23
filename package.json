@@ -1,0 +1,18 @@
+{
+  "name": "todo-appointment-app",
+  "version": "1.0.0",
+  "description": "Todo and Appointment Booking App with React and Express",
+  "scripts": {
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "cd server && npm start",
+    "client": "cd client && npm start",
+    "build": "cd client && npm run build",
+    "heroku-postbuild": "cd client && npm install && npm run build"
+  },
+  "keywords": ["react", "express", "todo", "appointments", "booking"],
+  "author": "Your Name",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^7.6.0"
+  }
+}

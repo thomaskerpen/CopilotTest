@@ -19,8 +19,6 @@ export default function TodoList() {
     isOverdue
   } = useTodos();
 
-  const today = dateUtils.getTodayString();
-
   return (
     <>
       <div className="view-toggle">
