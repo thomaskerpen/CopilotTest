@@ -22,11 +22,8 @@ export const useBooking = () => {
 
   const fetchMyAppointments = async () => {
     try {
-      const response = await appointmentService.fetchMyAppointments();
-      if (response.ok) {
-        const appointments = await response.json();
-        setMyAppointments(appointments);
-      }
+      const appointments = await appointmentService.fetchMyAppointments();
+      setMyAppointments(appointments);
     } catch (error) {
       console.error('Fehler beim Laden der Termine:', error);
     }
@@ -35,14 +32,9 @@ export const useBooking = () => {
   const fetchAvailableSlots = async (date) => {
     setLoading(true);
     try {
-      const response = await appointmentService.fetchAvailableSlots(date);
-      if (response.ok) {
-        const data = await response.json();
-        setAvailableSlots(data.availableSlots);
-        setBookedSlots(data.bookedSlots);
-      } else {
-        console.error('API error:', response.status, await response.text());
-      }
+      const data = await appointmentService.fetchAvailableSlots(date);
+      setAvailableSlots(data.availableSlots);
+      setBookedSlots(data.bookedSlots);
     } catch (error) {
       console.error('Fehler beim Laden verfügbarer Zeiten:', error);
     } finally {
@@ -63,22 +55,14 @@ export const useBooking = () => {
     if (selectedDate && selectedTime) {
       setLoading(true);
       try {
-        const response = await appointmentService.bookAppointment(selectedDate, selectedTime);
-        
-        if (response.ok) {
-          alert(`Termin erfolgreich gebucht für ${dateUtils.formatDateForDisplay(selectedDate)} um ${selectedTime} Uhr`);
-          setSelectedTime('');
-          fetchAvailableSlots(selectedDate);
-          fetchMyAppointments();
-        } else if (response.status === 409) {
-          alert('Dieser Zeitslot ist bereits gebucht. Bitte wählen Sie einen anderen.');
-        } else {
-          const error = await response.json();
-          alert('Fehler beim Buchen: ' + error.error);
-        }
+        await appointmentService.bookAppointment(selectedDate, selectedTime);
+        alert(`Termin erfolgreich gebucht für ${dateUtils.formatDateForDisplay(selectedDate)} um ${selectedTime} Uhr`);
+        setSelectedTime('');
+        fetchAvailableSlots(selectedDate);
+        fetchMyAppointments();
       } catch (error) {
         console.error('Fehler beim Buchen:', error);
-        alert('Fehler beim Buchen des Termins');
+        alert('Fehler beim Buchen: ' + error.message);
       } finally {
         setLoading(false);
       }
@@ -89,22 +73,16 @@ export const useBooking = () => {
     if (window.confirm('Möchten Sie diesen Termin wirklich stornieren?')) {
       setLoading(true);
       try {
-        const response = await appointmentService.deleteAppointment(appointmentId);
-        
-        if (response.ok) {
-          alert('Termin erfolgreich storniert');
-          fetchMyAppointments();
-          // Refresh available slots if a date is selected
-          if (selectedDate) {
-            fetchAvailableSlots(selectedDate);
-          }
-        } else {
-          const error = await response.json();
-          alert('Fehler beim Stornieren: ' + error.error);
+        await appointmentService.deleteAppointment(appointmentId);
+        alert('Termin erfolgreich storniert');
+        fetchMyAppointments();
+        // Refresh available slots if a date is selected
+        if (selectedDate) {
+          fetchAvailableSlots(selectedDate);
         }
       } catch (error) {
         console.error('Fehler beim Stornieren:', error);
-        alert('Fehler beim Stornieren des Termins');
+        alert('Fehler beim Stornieren: ' + error.message);
       } finally {
         setLoading(false);
       }

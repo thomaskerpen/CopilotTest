@@ -7,34 +7,49 @@ const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'supersecretkey';
 
 // Registrierung
-router.post('/register', (req, res) => {
-  const { username, password } = req.body;
-  if (!username || !password) {
-    return res.status(400).json({ error: 'Username und Passwort erforderlich' });
-  }
-  db.get('SELECT * FROM users WHERE username = ?', [username], (err, user) => {
-    if (user) {
+router.post('/register', async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    if (!username || !password) {
+      return res.status(400).json({ error: 'Username und Passwort erforderlich' });
+    }
+
+    // Check if user already exists
+    const existingUser = await db.getUserByUsername(username);
+    if (existingUser) {
       return res.status(409).json({ error: 'Benutzername bereits vergeben' });
     }
+
+    // Create new user
     const passwordHash = bcrypt.hashSync(password, 8);
-    db.run('INSERT INTO users (username, passwordHash) VALUES (?, ?)', [username, passwordHash], function(err) {
-      if (err) return res.status(500).json({ error: 'DB-Fehler' });
-      res.status(201).json({ success: true });
-    });
-  });
+    await db.createUser(username, passwordHash);
+    res.status(201).json({ success: true });
+  } catch (error) {
+    console.error('Register error:', error);
+    res.status(500).json({ error: 'DB-Fehler' });
+  }
 });
 
 // Login
-router.post('/login', (req, res) => {
-  const { username, password } = req.body;
-  db.get('SELECT * FROM users WHERE username = ?', [username], (err, user) => {
-    if (err || !user) return res.status(401).json({ error: 'User nicht gefunden' });
-    if (!bcrypt.compareSync(password, user.passwordHash)) {
+router.post('/login', async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    const user = await db.getUserByUsername(username);
+    
+    if (!user) {
+      return res.status(401).json({ error: 'User nicht gefunden' });
+    }
+
+    if (!bcrypt.compareSync(password, user.password)) {
       return res.status(401).json({ error: 'Falsches Passwort' });
     }
+
     const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '2h' });
     res.json({ token });
-  });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ error: 'Server-Fehler' });
+  }
 });
 
 module.exports = router;

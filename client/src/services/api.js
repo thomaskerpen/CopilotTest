@@ -1,7 +1,5 @@
-// Static API URL for production deployment
-const API_BASE_URL = process.env.NODE_ENV === 'production' 
-  ? 'https://server-4ri8gyf9v-thomas-projects-c6435665.vercel.app/api'  // Working server with in-memory DB
-  : `http://${window.location.hostname}:5000/api`;  // Local development
+// Hardcoded API URL for production deployment on Vercel
+const API_BASE_URL = 'https://server-ten-liart-22.vercel.app/api';
 
 console.log('API_BASE_URL:', API_BASE_URL);  // Debug log
 
@@ -20,7 +18,13 @@ export const authService = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password })
     });
-    return response;
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Login fehlgeschlagen');
+    }
+    
+    return await response.json();
   },
 
   register: async (username, password) => {
@@ -29,7 +33,13 @@ export const authService = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password })
     });
-    return response;
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Registrierung fehlgeschlagen');
+    }
+    
+    return await response.json();
   }
 };
 
@@ -38,7 +48,15 @@ export const todoService = {
     const response = await fetch(`${API_BASE_URL}/todos`, {
       headers: getAuthHeaders()
     });
-    return response;
+    
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Nicht autorisiert - bitte erneut anmelden');
+      }
+      throw new Error('Fehler beim Laden der Todos');
+    }
+    
+    return await response.json();
   },
 
   addTodo: async (text, dueDate) => {
@@ -47,7 +65,15 @@ export const todoService = {
       headers: getAuthHeaders(),
       body: JSON.stringify({ text, dueDate })
     });
-    return response;
+    
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Nicht autorisiert - bitte erneut anmelden');
+      }
+      throw new Error('Fehler beim Hinzufügen des Todos');
+    }
+    
+    return await response.json();
   },
 
   toggleTodo: async (id, completed) => {
@@ -56,7 +82,15 @@ export const todoService = {
       headers: getAuthHeaders(),
       body: JSON.stringify({ completed: !completed })
     });
-    return response;
+    
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Nicht autorisiert - bitte erneut anmelden');
+      }
+      throw new Error('Fehler beim Aktualisieren des Todos');
+    }
+    
+    return await response.json();
   },
 
   deleteTodo: async (id) => {
@@ -64,7 +98,15 @@ export const todoService = {
       method: 'DELETE',
       headers: getAuthHeaders()
     });
-    return response;
+    
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Nicht autorisiert - bitte erneut anmelden');
+      }
+      throw new Error('Fehler beim Löschen des Todos');
+    }
+    
+    return await response.json();
   }
 };
 
@@ -73,14 +115,30 @@ export const appointmentService = {
     const response = await fetch(`${API_BASE_URL}/appointments`, {
       headers: getAuthHeaders()
     });
-    return response;
+    
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Nicht autorisiert - bitte erneut anmelden');
+      }
+      throw new Error('Fehler beim Laden der Termine');
+    }
+    
+    return await response.json();
   },
 
   fetchAvailableSlots: async (date) => {
     const response = await fetch(`${API_BASE_URL}/appointments/available/${date}`, {
       headers: getAuthHeaders()
     });
-    return response;
+    
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Nicht autorisiert - bitte erneut anmelden');
+      }
+      throw new Error('Fehler beim Laden der verfügbaren Zeiten');
+    }
+    
+    return await response.json();
   },
 
   bookAppointment: async (date, time) => {
@@ -89,7 +147,16 @@ export const appointmentService = {
       headers: getAuthHeaders(),
       body: JSON.stringify({ date, time })
     });
-    return response;
+    
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Nicht autorisiert - bitte erneut anmelden');
+      }
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Fehler beim Buchen des Termins');
+    }
+    
+    return await response.json();
   },
 
   deleteAppointment: async (id) => {
@@ -97,7 +164,15 @@ export const appointmentService = {
       method: 'DELETE',
       headers: getAuthHeaders()
     });
-    return response;
+    
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Nicht autorisiert - bitte erneut anmelden');
+      }
+      throw new Error('Fehler beim Löschen des Termins');
+    }
+    
+    return await response.json();
   }
 };
 
@@ -110,20 +185,42 @@ export const contactService = {
       },
       body: JSON.stringify({ name, email, message })
     });
-    return response;
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Fehler beim Senden der Nachricht');
+    }
+    
+    return await response.json();
   },
 
   getContactRequests: async () => {
     const response = await fetch(`${API_BASE_URL}/contacts`, {
       headers: getAuthHeaders()
     });
-    return response;
+    
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Nicht autorisiert - bitte erneut anmelden');
+      }
+      throw new Error('Fehler beim Laden der Kontaktanfragen');
+    }
+    
+    return await response.json();
   },
 
   getContactById: async (id) => {
     const response = await fetch(`${API_BASE_URL}/contacts/${id}`, {
       headers: getAuthHeaders()
     });
-    return response;
+    
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Nicht autorisiert - bitte erneut anmelden');
+      }
+      throw new Error('Fehler beim Laden der Kontaktanfrage');
+    }
+    
+    return await response.json();
   }
 };

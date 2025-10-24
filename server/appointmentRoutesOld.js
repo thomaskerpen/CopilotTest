@@ -48,31 +48,66 @@ router.post('/', async (req, res) => {
     }
   }
 });
+    db.run(
+      'INSERT INTO appointments (userId, date, time) VALUES (?, ?, ?)',
+      [userId, date, time],
+      function(err) {
+        if (err) {
+          console.error('Fehler beim Buchen des Termins:', err);
+          return res.status(500).json({ error: 'Fehler beim Buchen des Termins' });
+        }
+        
+        res.status(201).json({
+          id: this.lastID,
+          userId,
+          date,
+          time,
+          message: 'Termin erfolgreich gebucht'
+        });
+      }
+    );
+  });
+});
 
 // Alle Termine des eingeloggten Users
-router.get('/', async (req, res) => {
-  try {
-    const userId = req.user.id;
-    const appointments = await db.getAppointmentsByUserId(userId);
-    res.json(appointments);
-  } catch (error) {
-    console.error('Fehler beim Laden der Termine:', error);
-    res.status(500).json({ error: 'Fehler beim Laden der Termine' });
-  }
+router.get('/', (req, res) => {
+  const userId = req.user.id;
+  
+  db.all(
+    'SELECT * FROM appointments WHERE userId = ? ORDER BY date, time',
+    [userId],
+    (err, appointments) => {
+      if (err) {
+        console.error('Fehler beim Laden der Termine:', err);
+        return res.status(500).json({ error: 'Fehler beim Laden der Termine' });
+      }
+      
+      res.json(appointments);
+    }
+  );
 });
 
 // Termin löschen
-router.delete('/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const userId = req.user.id;
-    
-    await db.deleteAppointment(parseInt(id), userId);
-    res.status(204).send();
-  } catch (error) {
-    console.error('Fehler beim Löschen des Termins:', error);
-    res.status(500).json({ error: 'Fehler beim Löschen des Termins' });
-  }
+router.delete('/:id', (req, res) => {
+  const { id } = req.params;
+  const userId = req.user.id;
+  
+  db.run(
+    'DELETE FROM appointments WHERE id = ? AND userId = ?',
+    [id, userId],
+    function(err) {
+      if (err) {
+        console.error('Fehler beim Löschen des Termins:', err);
+        return res.status(500).json({ error: 'Fehler beim Löschen des Termins' });
+      }
+      
+      if (this.changes === 0) {
+        return res.status(404).json({ error: 'Termin nicht gefunden' });
+      }
+      
+      res.status(204).send();
+    }
+  );
 });
 
 module.exports = router;

@@ -57,28 +57,22 @@ export const useContact = () => {
     setSuccessMessage('');
 
     try {
-      const response = await contactService.sendContactForm(
+      await contactService.sendContactForm(
         formData.name,
         formData.email,
         formData.message
       );
 
-      if (response.ok) {
-        await response.json(); // Parse response but don't store
-        setSuccessMessage('Vielen Dank! Ihre Anfrage wurde erfolgreich gesendet.');
-        // Reset form
-        setFormData({
-          name: '',
-          email: '',
-          message: ''
-        });
-      } else {
-        const error = await response.json();
-        setErrorMessage(error.error || 'Fehler beim Senden der Anfrage');
-      }
+      setSuccessMessage('Vielen Dank! Ihre Anfrage wurde erfolgreich gesendet.');
+      // Reset form
+      setFormData({
+        name: '',
+        email: '',
+        message: ''
+      });
     } catch (error) {
       console.error('Error sending contact form:', error);
-      setErrorMessage('Netzwerkfehler. Bitte versuchen Sie es später erneut.');
+      setErrorMessage(error.message || 'Fehler beim Senden der Anfrage');
     } finally {
       setLoading(false);
     }

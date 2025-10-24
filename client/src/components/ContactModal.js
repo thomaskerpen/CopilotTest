@@ -19,15 +19,10 @@ export default function ContactModal({ contactId, isOpen, onClose }) {
     setLoading(true);
     setError('');
     try {
-      const response = await contactService.getContactById(contactId);
-      if (response.ok) {
-        const data = await response.json();
-        setContactDetails(data);
-      } else {
-        setError('Kontaktdetails konnten nicht geladen werden');
-      }
+      const data = await contactService.getContactById(contactId);
+      setContactDetails(data);
     } catch (err) {
-      setError('Fehler beim Laden der Kontaktdetails');
+      setError('Fehler beim Laden der Kontaktdetails: ' + err.message);
       console.error('Error fetching contact details:', err);
     } finally {
       setLoading(false);

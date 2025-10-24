@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import '../styles/App.css';
+import { authService } from '../services/api';
 
 export default function Register({ onRegister, onSwitchToLogin }) {
   const [username, setUsername] = useState('');
@@ -12,20 +13,11 @@ export default function Register({ onRegister, onSwitchToLogin }) {
     setError('');
     setSuccess(false);
     try {
-  const res = await fetch('http://192.168.2.141:5000/api/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
-      });
-      if (!res.ok) {
-        const data = await res.json();
-        setError(data.error || 'Registrierung fehlgeschlagen');
-        return;
-      }
+      await authService.register(username, password);
       setSuccess(true);
       setTimeout(() => onSwitchToLogin(), 1200);
     } catch (err) {
-      setError('Server nicht erreichbar');
+      setError(err.message || 'Registrierung fehlgeschlagen');
     }
   };
 
