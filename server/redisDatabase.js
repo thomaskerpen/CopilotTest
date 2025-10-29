@@ -1,9 +1,36 @@
-const { kv } = require('@vercel/kv');
+const { createClient } = require('redis');
 
-// KV Database abstraction layer
-class KVDatabase {
+// Redis Database abstraction layer
+class RedisDatabase {
+  constructor() {
+    this.client = null;
+    this.initialized = false;
+  }
+
+  async connect() {
+    if (this.client && this.initialized) return;
+    
+    try {
+      this.client = createClient({
+        url: process.env.REDIS_URL
+      });
+      
+      this.client.on('error', (err) => {
+        console.error('Redis Client Error:', err);
+      });
+      
+      await this.client.connect();
+      this.initialized = true;
+      console.log('✅ Connected to Redis database');
+    } catch (error) {
+      console.error('❌ Failed to connect to Redis:', error);
+      throw error;
+    }
+  }
+
   // Users
   async createUser(username, hashedPassword) {
+    await this.connect();
     const users = await this.getUsers();
     const existingUser = users.find(u => u.username === username);
     if (existingUser) {
@@ -14,17 +41,19 @@ class KVDatabase {
     const newUser = { id: userId, username, password: hashedPassword };
     users.push(newUser);
     
-    await kv.set('users', JSON.stringify(users));
+    await this.client.set('users', JSON.stringify(users));
     return newUser;
   }
 
   async getUserByUsername(username) {
+    await this.connect();
     const users = await this.getUsers();
     return users.find(u => u.username === username);
   }
 
   async getUsers() {
-    const users = await kv.get('users');
+    await this.connect();
+    const users = await this.client.get('users');
     return users ? JSON.parse(users) : [];
   }
 
@@ -34,11 +63,13 @@ class KVDatabase {
 
   // Todos
   async getTodosByUserId(userId) {
+    await this.connect();
     const todos = await this.getAllTodos();
     return todos.filter(t => t.userId === userId);
   }
 
   async createTodo(userId, text, dueDate) {
+    await this.connect();
     const todos = await this.getAllTodos();
     const todoId = todos.length > 0 ? Math.max(...todos.map(t => t.id)) + 1 : 1;
     
@@ -52,11 +83,12 @@ class KVDatabase {
     };
     
     todos.push(newTodo);
-    await kv.set('todos', JSON.stringify(todos));
+    await this.client.set('todos', JSON.stringify(todos));
     return newTodo;
   }
 
   async updateTodo(todoId, updates) {
+    await this.connect();
     const todos = await this.getAllTodos();
     const todoIndex = todos.findIndex(t => t.id === todoId);
     
@@ -65,33 +97,38 @@ class KVDatabase {
     }
     
     todos[todoIndex] = { ...todos[todoIndex], ...updates };
-    await kv.set('todos', JSON.stringify(todos));
+    await this.client.set('todos', JSON.stringify(todos));
     return todos[todoIndex];
   }
 
   async deleteTodo(todoId, userId) {
+    await this.connect();
     const todos = await this.getAllTodos();
     const filteredTodos = todos.filter(t => !(t.id === todoId && t.userId === userId));
-    await kv.set('todos', JSON.stringify(filteredTodos));
+    await this.client.set('todos', JSON.stringify(filteredTodos));
   }
 
   async getAllTodos() {
-    const todos = await kv.get('todos');
+    await this.connect();
+    const todos = await this.client.get('todos');
     return todos ? JSON.parse(todos) : [];
   }
 
   // Appointments
   async getAppointmentsByUserId(userId) {
+    await this.connect();
     const appointments = await this.getAllAppointments();
     return appointments.filter(a => a.userId === userId);
   }
 
   async getAppointmentsByDate(date) {
+    await this.connect();
     const appointments = await this.getAllAppointments();
     return appointments.filter(a => a.date === date);
   }
 
   async createAppointment(userId, date, time) {
+    await this.connect();
     const appointments = await this.getAllAppointments();
     
     // Check if slot is already booked
@@ -111,23 +148,26 @@ class KVDatabase {
     };
     
     appointments.push(newAppointment);
-    await kv.set('appointments', JSON.stringify(appointments));
+    await this.client.set('appointments', JSON.stringify(appointments));
     return newAppointment;
   }
 
   async deleteAppointment(appointmentId, userId) {
+    await this.connect();
     const appointments = await this.getAllAppointments();
     const filteredAppointments = appointments.filter(a => !(a.id === appointmentId && a.userId === userId));
-    await kv.set('appointments', JSON.stringify(filteredAppointments));
+    await this.client.set('appointments', JSON.stringify(filteredAppointments));
   }
 
   async getAllAppointments() {
-    const appointments = await kv.get('appointments');
+    await this.connect();
+    const appointments = await this.client.get('appointments');
     return appointments ? JSON.parse(appointments) : [];
   }
 
   // Contacts
   async createContact(name, email, message) {
+    await this.connect();
     const contacts = await this.getAllContacts();
     const contactId = contacts.length > 0 ? Math.max(...contacts.map(c => c.id)) + 1 : 1;
     
@@ -140,19 +180,21 @@ class KVDatabase {
     };
     
     contacts.push(newContact);
-    await kv.set('contacts', JSON.stringify(contacts));
+    await this.client.set('contacts', JSON.stringify(contacts));
     return newContact;
   }
 
   async getAllContacts() {
-    const contacts = await kv.get('contacts');
+    await this.connect();
+    const contacts = await this.client.get('contacts');
     return contacts ? JSON.parse(contacts) : [];
   }
 
   async getContactById(contactId) {
+    await this.connect();
     const contacts = await this.getAllContacts();
     return contacts.find(c => c.id === contactId);
   }
 }
 
-module.exports = new KVDatabase();
+module.exports = new RedisDatabase();

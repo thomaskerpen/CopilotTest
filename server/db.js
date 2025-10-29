@@ -1,20 +1,29 @@
-// Database abstraction - supports both SQLite (local) and Vercel KV (production)
-const USE_KV = process.env.NODE_ENV === 'production' || process.env.VERCEL;
+// Database abstraction - supports SQLite (local), Redis (Vercel), and Vercel KV (future)
+const HAS_REDIS = process.env.REDIS_URL;
+const HAS_KV_ENV = process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN;
+const USE_REDIS = (process.env.NODE_ENV === 'production' || process.env.VERCEL) && HAS_REDIS;
+const USE_KV = (process.env.NODE_ENV === 'production' || process.env.VERCEL) && HAS_KV_ENV;
 
 let db;
 
 if (USE_KV) {
-  // Use Vercel KV for production
+  // Use Vercel KV for production (when env vars are available)
   console.log('Using Vercel KV database');
   db = require('./kvDatabase');
+} else if (USE_REDIS) {
+  // Use Redis for production (when REDIS_URL is available)
+  console.log('Using Redis database');
+  db = require('./redisDatabase');
 } else {
-  // Use SQLite for local development
-  console.log('Using SQLite database');
+  // Use SQLite for local development or when neither KV nor Redis is configured
+  console.log('Using SQLite database (local development)');
   const sqlite3 = require('sqlite3').verbose();
   const path = require('path');
 
-  // Create in-memory database for development
-  const sqliteDb = new sqlite3.Database(':memory:');
+  // Create file-based database for local development
+  const dbPath = path.join(__dirname, 'todo.sqlite');
+  const sqliteDb = new sqlite3.Database(dbPath);
+  console.log('SQLite database file:', dbPath);
 
   // Initialize SQLite tables
   sqliteDb.serialize(() => {
@@ -76,6 +85,19 @@ if (USE_KV) {
           (err, row) => {
             if (err) reject(err);
             else resolve(row);
+          }
+        );
+      });
+    },
+
+    getAllUsers: () => {
+      return new Promise((resolve, reject) => {
+        sqliteDb.all(
+          'SELECT * FROM users ORDER BY id ASC',
+          [],
+          (err, rows) => {
+            if (err) reject(err);
+            else resolve(rows);
           }
         );
       });

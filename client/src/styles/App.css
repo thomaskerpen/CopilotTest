@@ -667,6 +667,26 @@ li button:hover {
   font-family: inherit;
 }
 
+/* Readonly field styles */
+.readonly-field {
+  background: rgba(200, 200, 200, 0.2) !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+  cursor: not-allowed !important;
+}
+
+.readonly-field:focus {
+  background: rgba(200, 200, 200, 0.2) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  box-shadow: none !important;
+}
+
+.field-info {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.85em;
+  margin-top: 4px;
+  display: block;
+}
+
 .submit-button {
   background: linear-gradient(135deg, #007bff, #0056b3);
   border: none;

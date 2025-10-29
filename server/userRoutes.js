@@ -40,7 +40,15 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'User nicht gefunden' });
     }
 
-    if (!bcrypt.compareSync(password, user.password)) {
+    // Handle both 'password' and 'passwordHash' field names for backward compatibility
+    const hashedPassword = user.password || user.passwordHash;
+    
+    if (!hashedPassword) {
+      console.error('No password hash found for user:', user);
+      return res.status(500).json({ error: 'Password hash missing' });
+    }
+
+    if (!bcrypt.compareSync(password, hashedPassword)) {
       return res.status(401).json({ error: 'Falsches Passwort' });
     }
 

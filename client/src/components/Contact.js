@@ -8,6 +8,7 @@ export default function Contact() {
     loading,
     successMessage,
     errorMessage,
+    isLoggedIn,
     handleInputChange,
     handleSubmit
   } = useContact();
@@ -44,9 +45,17 @@ export default function Contact() {
               id="name"
               value={formData.name}
               onChange={(e) => handleInputChange('name', e.target.value)}
-              placeholder="Ihr vollständiger Name"
+              placeholder={isLoggedIn ? "Automatisch ausgefüllt" : "Ihr vollständiger Name"}
               required
+              readOnly={isLoggedIn}
+              className={isLoggedIn ? 'readonly-field' : ''}
+              title={isLoggedIn ? "Name wird automatisch aus Ihrem Login übernommen" : ""}
             />
+            {isLoggedIn && (
+              <small className="field-info">
+                ℹ️ Name wird automatisch aus Ihrem Login übernommen
+              </small>
+            )}
           </div>
 
           <div className="form-group">

@@ -1,6 +1,29 @@
-// Hardcoded API URL for production deployment on Vercel
-const API_BASE_URL = 'https://server-ten-liart-22.vercel.app/api';
+// Smart API URL detection based on environment
+const getApiBaseUrl = () => {
+  // Use environment variable if available
+  if (process.env.REACT_APP_API_URL) {
+    return process.env.REACT_APP_API_URL;
+  }
+  
+  // Check if we're in development
+  if (process.env.NODE_ENV === 'development') {
+    return 'http://localhost:5000/api';
+  }
+  
+  // Check if running on localhost (even if built)
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    return 'http://localhost:5000/api';
+  }
+  
+  // Production: Use Vercel server
+  return 'https://server-ten-liart-22.vercel.app/api';
+};
 
+const API_BASE_URL = getApiBaseUrl();
+
+console.log('Environment:', process.env.NODE_ENV);
+console.log('Hostname:', window.location.hostname);
+console.log('REACT_APP_API_URL:', process.env.REACT_APP_API_URL);
 console.log('API_BASE_URL:', API_BASE_URL);  // Debug log
 
 const getAuthHeaders = () => {
@@ -106,6 +129,11 @@ export const todoService = {
       throw new Error('Fehler beim Löschen des Todos');
     }
     
+    // 204 No Content - kein JSON zurück
+    if (response.status === 204) {
+      return;
+    }
+    
     return await response.json();
   }
 };
@@ -170,6 +198,11 @@ export const appointmentService = {
         throw new Error('Nicht autorisiert - bitte erneut anmelden');
       }
       throw new Error('Fehler beim Löschen des Termins');
+    }
+    
+    // 204 No Content - kein JSON zurück
+    if (response.status === 204) {
+      return;
     }
     
     return await response.json();

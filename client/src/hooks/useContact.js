@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { contactService } from '../services/api';
+import { authUtils } from '../utils/helpers';
 
 export const useContact = () => {
   const [formData, setFormData] = useState({
@@ -11,7 +12,24 @@ export const useContact = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
 
+  // Auto-fill name with logged-in username
+  useEffect(() => {
+    const currentUsername = authUtils.getCurrentUsername();
+    if (currentUsername) {
+      setFormData(prev => ({
+        ...prev,
+        name: currentUsername
+      }));
+    }
+  }, []);
+
   const handleInputChange = (field, value) => {
+    // Prevent changing the name field if user is logged in
+    const currentUsername = authUtils.getCurrentUsername();
+    if (field === 'name' && currentUsername) {
+      return; // Don't allow name changes when logged in
+    }
+
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -79,13 +97,18 @@ export const useContact = () => {
   };
 
   const resetForm = () => {
+    const currentUsername = authUtils.getCurrentUsername();
     setFormData({
-      name: '',
+      name: currentUsername || '', // Keep username if logged in
       email: '',
       message: ''
     });
     setSuccessMessage('');
     setErrorMessage('');
+  };
+
+  const isLoggedIn = () => {
+    return Boolean(authUtils.getCurrentUsername());
   };
 
   return {
@@ -96,6 +119,7 @@ export const useContact = () => {
     loading,
     successMessage,
     errorMessage,
+    isLoggedIn: isLoggedIn(),
     
     // Actions
     handleInputChange,

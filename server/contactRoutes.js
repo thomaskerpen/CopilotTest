@@ -42,10 +42,25 @@ router.post('/', async (req, res) => {
 // Hilfsfunktion: Automatisches TODO für Kontaktanfrage erstellen
 async function createAutoTodoForContact(name, email, message, contactId) {
   try {
-    // Admin-User finden (standardmäßig 'test' oder ersten User)
-    const adminUser = await db.getUserByUsername('test');
+    // Admin-User finden - erst 'Thomas', dann 'admin', dann ersten verfügbaren User
+    let adminUser = await db.getUserByUsername('Thomas');
+    
     if (!adminUser) {
-      throw new Error('Admin-User nicht gefunden für Auto-TODO');
+      adminUser = await db.getUserByUsername('admin');
+    }
+    
+    if (!adminUser) {
+      // Fallback: Ersten verfügbaren User finden
+      const allUsers = await db.getAllUsers();
+      if (allUsers && allUsers.length > 0) {
+        adminUser = allUsers[0];
+        console.log(`ℹ️ Kein Admin-User gefunden, verwende ersten User: ${adminUser.username}`);
+      }
+    }
+    
+    if (!adminUser) {
+      console.log('⚠️ Kein User für Auto-TODO gefunden - überspringe Todo-Erstellung');
+      return null;
     }
     
     // TODO-Text mit Contact-ID für spätere Verknüpfung erstellen
